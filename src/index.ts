@@ -2,6 +2,8 @@ import "dotenv/config";
 import { Client, GatewayIntentBits } from "discord.js";
 import { SteamProfile } from "./services/steamServices";
 import { perfilGenshin } from "./services/enkaServices";
+import http from "http";
+
 
 const client = new Client({
     intents: [
@@ -81,6 +83,14 @@ client.on("messageCreate", async message => {
 
 
 })
+
+const port = process.env.PORT || 3000;
+http.createServer((req, res) => {
+    res.writeHead(200, { "Content-Type": "text/plain" });
+    res.end("Klukai online RANDANDANDAN!");
+}).listen(port, () => {
+    console.log(`🌍 Servidor de verificação ativo na porta ${port}`);
+});
 
 // O login roda na raiz do projeto para dar a partida no bot
 client.login(process.env.DISCORD_TOKEN);
