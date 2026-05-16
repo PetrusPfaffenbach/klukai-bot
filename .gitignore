@@ -1,14 +1,14 @@
-# 🔒 Segurança (NUNCA COMMITE ISSO)
+# Segurança
 .env
 
-# 📦 Dependências (Não precisamos subir, o npm install reconstrói na nuvem)
+# Dependências (Não precisamos subir, o npm install reconstrói na nuvem)
 node_modules/
 
-# 🛠️ Compilação (Arquivos JavaScript gerados a partir do TypeScript)
+# Compilação (Arquivos JavaScript gerados a partir do TypeScript)
 dist/
 build/
 
-# 📋 Logs e Arquivos do Sistema
+# Logs e Arquivos do Sistema
 *.log
 .DS_Store
 .vscode/
