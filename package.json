@@ -1,0 +1,28 @@
+{
+  "name": "projdisc",
+  "version": "1.0.0",
+  "description": "making an leaderboard of cs with my friends",
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc",
+    "start": "node dist/index.js"
+  },
+  "keywords": [],
+  "devDependencies": {
+    "@types/node": "^25.8.0",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^6.0.3"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.105.4",
+    "discord.js": "^14.26.4",
+    "dotenv": "^17.4.2",
+    "enka-network-api": "^5.0.15",
+    "genshin.js": "^1.0.0-alpha.1"
+  }
+}
