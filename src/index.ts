@@ -3,6 +3,7 @@ import { Client, GatewayIntentBits } from "discord.js";
 import { SteamProfile } from "./services/steamServices";
 import { perfilGenshin } from "./services/enkaServices";
 import http from "http";
+import { registerCS } from "./services/csServices";
 
 
 const client = new Client({
@@ -81,7 +82,24 @@ client.on("messageCreate", async message => {
     perfilGenshin(message, savedUid);
     }
 
+    /// 4. COMANDOS DA SESSÃO CS2 (EM DESENVOLVIMENTO!)
+    if(FormattedMessage.startsWith("!registrar-cs")) {    
+        const parts = message.content.split(" ");
 
+        console.log("A Klukai enxergou as seguintes partes:", parts);
+
+        const authCode = parts[1];
+        const knowMatch = parts[2];
+
+        if(!authCode || !knowMatch) {
+            return message.reply(
+                "[!] **Formato Inválido!** use o formato: \n" +
+                "`!registrar-cs <AuthCode> <UltimaMatchCode>`"
+            );
+        }
+
+        return registerCS(message, authCode, knowMatch);
+    }
 })
 
 const port = process.env.PORT || 3000;

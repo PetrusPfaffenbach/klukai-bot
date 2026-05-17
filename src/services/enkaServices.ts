@@ -1,7 +1,10 @@
 import "dotenv/config";
+import { supabase } from "./supabase";
+
 
 export async function perfilGenshin(message: any, uid: string) {
     const url = `https://enka.network/api/uid/${uid}/`;
+    const discordId = message.author.id;
 
     try {
         const Waitingmessage = await message.reply("Getting into Enka Servers")
@@ -27,6 +30,13 @@ export async function perfilGenshin(message: any, uid: string) {
         if (!playerInfo) {
             return Waitingmessage.edit("[X] Esse UID existe, mas o perfil está sem informações públicas.");
         }
+
+        const { error: dbError } = await supabase
+            .from("users")
+            .upsert({
+                discord_id: discordId,
+                genshin_uid: uid
+            })
 
         const textoResposta =
             `✨ **PAINEL DE GENSHIN IMPACT** ✨\n` +
