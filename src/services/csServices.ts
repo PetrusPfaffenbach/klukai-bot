@@ -1,5 +1,6 @@
-import { Message } from "discord.js";
+import { Message, transformResolved } from "discord.js";
 import { supabase } from "./supabase"
+import * as cheerio from 'cheerio';
 
 export async function registerCS(message:any, authCode: string, knowMatch: string )  {
     

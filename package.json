@@ -13,15 +13,21 @@
   },
   "keywords": [],
   "devDependencies": {
+    "@types/express": "^5.0.6",
     "@types/node": "^25.8.0",
     "ts-node-dev": "^2.0.0",
     "typescript": "^6.0.3"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.105.4",
+    "cheerio": "^1.2.0",
     "discord.js": "^14.26.4",
     "dotenv": "^17.4.2",
     "enka-network-api": "^5.0.15",
-    "genshin.js": "^1.0.0-alpha.1"
+    "express": "^5.2.1",
+    "genshin.js": "^1.0.0-alpha.1",
+    "got-scraping": "^4.2.1",
+    "node-cs2": "^2.2.4",
+    "steam-user": "^5.3.0"
   }
 }

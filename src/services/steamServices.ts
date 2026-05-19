@@ -12,6 +12,7 @@ export async function SteamProfile(message: any, steamId: string) {
     }
 
     const url = `https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key=${apiKey}&steamids=${steamId}`;
+    
 
     try {
         const MensagemEspera = await message.reply("[LOAD] Consultando servidores da Valve (Perfil + CS). . .");

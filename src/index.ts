@@ -1,9 +1,19 @@
 import "dotenv/config";
-import { Client, GatewayIntentBits } from "discord.js";
+import { Client, GatewayIntentBits, ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, ModalBuilder, TextInputBuilder, TextInputStyle, formatEmoji } from "discord.js";
 import { SteamProfile } from "./services/steamServices";
 import { perfilGenshin } from "./services/enkaServices";
 import http from "http";
 import { registerCS } from "./services/csServices";
+import { supabase } from "./services/supabase";
+import express from 'express';
+import { buscarPartidaCS2, iniciarSteam } from './services/steamClient';
+import { executeStatusCS } from "../src/commands/csStats";
+import { steamRegister } from "./commands/steamRegister";
+import { GenshinRegister } from "./commands/GenshinRegister";
+import { startTrackerCS2 } from "./services/csPoller";
+import { executeLeaderboard } from "./commands/Leaderboard";
+import { executarDiagnosticoDeBoot } from "./services/systemCheck";
+
 
 
 const client = new Client({
@@ -15,12 +25,18 @@ const client = new Client({
     ]
 });
 
-// BANCO DE DADOS TEMPORÁRIO VIA ARRAY
-const falseBanco = new Map<string, string>();
-const falseBancoGenshin = new Map<string , string>();
+
+const app = express();
+app.get('/healthz', (req, res) => res.status(200).send('Bot CS2 Rodando!'));
+app.listen(process.env.PORT || 3000, () => console.log('Web server online.'));
+
 
 client.once("ready", () => {
     console.log(`O motor da ${client.user?.tag} ligou com sucesso!`);
+
+    executarDiagnosticoDeBoot(client);
+
+    startTrackerCS2(client);
 });
 
 
@@ -38,77 +54,35 @@ client.on("messageCreate", async message => {
     }
 
     // 2. COMANDOS DA SESSÃO STEAM
-    if(FormattedMessage.startsWith("!registrar-steam")) {
-        const regex = message.content.match(/\d{17}/);
-        const steamIdExtract = regex ? regex[0] : null;
-    
-    if(!steamIdExtract) {
-        return message.reply("SteamID64 não encontrado ou inválido!. Cole seu ID de 17 dígitos ou link completo do perfil");
-    }
-    falseBanco.set(discordIdUser , steamIdExtract);
-    return message.reply(`**SUCESSO** Discord vinculado com o SteamID.`);
-    }
-
-    if(FormattedMessage === "!perfilsteam") {
-        const steamIdSave = falseBanco.get(discordIdUser);
-
-        if(!steamIdSave) {
-            return message.reply("**[!]** Você ainda não se registrou! Digite \`!registrar <seu_link_steam>\`, para ver seu perfil!")
-        }
-
-        SteamProfile(message, steamIdSave);
+    if (FormattedMessage.startsWith("!registrar-steam") || FormattedMessage === "!perfil-steam") {
+        // Agora qualquer um dos dois comandos entra aqui e vai lá pro arquivo de comando se resolver!
+        return steamRegister(message, discordIdUser);
     }
 
     // 3. COMANDOS DA SESSÃO HOYOVERSE (GENSHIN POR ENQUANTO!)
-    
-    if(FormattedMessage.startsWith("!registrar-genshin")) {
-        const regex2 = message.content.match(/\d{8,10}/);
-        const uidExtract = regex2 ? regex2[0] : null;
-    
-    if(!uidExtract) {
-        return message.reply("[!] UID Inválido! Digite um UID válido do Genshin!")
-    }
-    falseBancoGenshin.set(discordIdUser, uidExtract);
-    return message.reply(`**SUCESSO!** Registro da conta do genshin concluída`);
-}
-    
-    if(FormattedMessage === "!perfilgenshin") {
-        const savedUid = falseBancoGenshin.get(discordIdUser);
-    
-        if(!savedUid) {
-            return message.reply("**[!]** Você ainda não registrou seu UID do Genshin! utilize \`!registrar_genshin <seu_uid>\` primeiro.")
-        }
-    
-    perfilGenshin(message, savedUid);
+    if (FormattedMessage.startsWith("!registrar-genshin") || FormattedMessage === "!perfil-genshin") {
+        // Agora qualquer um dos dois comandos entra aqui e vai lá pro arquivo de comando se resolver!
+        return GenshinRegister(message, discordIdUser);
     }
 
-    /// 4. COMANDOS DA SESSÃO CS2 (EM DESENVOLVIMENTO!)
-    if(FormattedMessage.startsWith("!registrar-cs")) {    
-        const parts = message.content.split(" ");
 
-        console.log("A Klukai enxergou as seguintes partes:", parts);
+    if (FormattedMessage === "!statuscs") {
+        // Agora o index só chama a função e passa a bola para o arquivo do comando!
+        return executeStatusCS(message, discordIdUser);
+    }  
 
-        const authCode = parts[1];
-        const knowMatch = parts[2];
-
-        if(!authCode || !knowMatch) {
-            return message.reply(
-                "[!] **Formato Inválido!** use o formato: \n" +
-                "`!registrar-cs <AuthCode> <UltimaMatchCode>`"
-            );
-        }
-
-        return registerCS(message, authCode, knowMatch);
+    if(FormattedMessage.startsWith("!leaderboard")) {
+        return executeLeaderboard(message)
     }
-})
 
-const port = process.env.PORT || 3000;
-http.createServer((req, res) => {
-    res.writeHead(200, { "Content-Type": "text/plain" });
-    res.end("Klukai online RANDANDANDAN!");
-}).listen(port, () => {
-    console.log(`🌍 Servidor de verificação ativo na porta ${port}`);
+
 });
+
+iniciarSteam();
+
 
 // O login roda na raiz do projeto para dar a partida no bot
 client.login(process.env.DISCORD_TOKEN);
+
+// Remember
+// (1) git add . | (2) git commit -m "digite aqui" | (3) git push -u origin main 
