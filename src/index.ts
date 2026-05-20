@@ -91,18 +91,18 @@ client.on("messageCreate", async message => {
 
 
 });
-
-iniciarSteam();
-
-    console.log("\n[DEBUG] Verificando Token do Discord:", process.env.DISCORD_TOKEN ? "✅ TOKEN PRESENTE NA MEMÓRIA" : "❌ TOKEN AUSENTE/UNDEFINED");
-    console.log("[DEBUG] Iniciando tentativa de conexão com o Gateway do Discord...");
+console.log("\n[DEBUG] Verificando Token do Discord:", process.env.DISCORD_TOKEN ? "✅ TOKEN PRESENTE NA MEMÓRIA" : "❌ TOKEN AUSENTE/UNDEFINED");
+console.log("[DEBUG] Iniciando tentativa de conexão com o Gateway do Discord...");
 
 client.login(process.env.DISCORD_TOKEN)
-    .then(() => {
-        console.log("[DEBUG] A promessa de login foi concluída com sucesso!");
-    })
-    .catch(erro => {
-        console.error("\n[ERRO CRÍTICO] O Discord rejeitou o login. Motivo:", erro);
-    });
+.then(() => {
+    console.log("[DEBUG] A promessa de login foi concluída com sucesso!");
+})
+.catch(erro => {
+    console.error("\n[ERRO CRÍTICO] O Discord rejeitou o login. Motivo:", erro);
+});
+
+iniciarSteam();
 // Remember
+
 // (1) git add . | (2) git commit -m "digite aqui" | (3) git push -u origin main 
