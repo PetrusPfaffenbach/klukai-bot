@@ -1,17 +1,20 @@
 import { supabase } from "./supabase";
 import { buscarPartidaCS2 } from "./steamClient";
 import { Client } from "discord.js";
-import { sendTelemetry } from "./Telemetry"; // <-- O Walkie-Talkie chegou aqui!
+import { sendTelemetry } from "./Telemetry"; 
+import { start } from "node:repl";
 
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-export async function startTrackerCS2(client: Client) {
-    
-    // O console.log e o motor agora estão LIVRES, na raiz da função!
-    console.log("[!TRACK!] [POLLER] Rastreador do CS2 inicializado, loop de teste rápido (10 segundos)...");
+let trackerInterval: NodeJS.Timeout | null = null;
+let isRunning: boolean = false;
+let nextScanTime: number | null = null;
+const SCAN_INTERVAL_MS = 3600000;
 
-    setInterval(async () => {
-        console.log("\n[!STANDBY!][POLLER] Nova varredura de partidas inicializada. . . ");
+export async function startPollerScanner(client: Client) {
+    if(isRunning) return;
+    isRunning = true;
+    console.log("\n[!STANDBY!][POLLER] Nova varredura de partidas inicializada. . . ");
         
         try {
             const { data: users, error } = await supabase
@@ -90,6 +93,57 @@ export async function startTrackerCS2(client: Client) {
             console.log("[OK] [POLLER] Varredura concluída.");
         } catch (erroGeral: any) {
             await sendTelemetry(client, `[ERRO CRÍTICO NO LOOP]: ${erroGeral.message}`);
+        } finally {
+            isRunning = false;
+            nextScanTime = Date.now() + SCAN_INTERVAL_MS;
         }
-    }, 3600000);
-}
+    }
+
+
+    export async function startTrackerCS2(client: Client) {
+        console.log("[!TRACK!] [POLLER] Sistema engatilhado. Warm-up de 2 minutos iniciado. . .")       
+        
+        setTimeout(async () => {
+            trackerInterval = setInterval(async() =>{
+                await startPollerScanner(client);
+            }, SCAN_INTERVAL_MS);
+
+        }, 120000)
+    }
+
+    export async function forceScanCS2(client: Client) {
+        if (isRunning) return "O rastreador já está rodando nesse momento.";
+
+        if(trackerInterval) clearInterval(trackerInterval);
+
+        await startPollerScanner(client);
+
+        trackerInterval = setInterval(async () => {
+            await startPollerScanner(client);
+        }, SCAN_INTERVAL_MS);
+        
+        return "Varredura forçada concluída. Ciclo padrão de 1h reiniciando";
+    }
+
+    export function pausePollerCS2() {
+        if(trackerInterval) {
+            clearInterval(trackerInterval);
+            trackerInterval = null;
+            nextScanTime = null;
+            return "[!] Rastrador PAUSADO. ciclo de varredura interrompida.";
+        }
+    }
+
+    export function statusPollerCS2() {
+        if(!trackerInterval && !nextScanTime) {
+            return "[OFF] **Status: ** PAUSADO";
+        }
+        if(isRunning) {
+            return "[ON] **Status:** EM CICLO";
+        }
+
+        const msRestantes = nextScanTime ?nextScanTime - Date.now() : 0;
+        const minutosRestantes = Math.floor(msRestantes / 60000);
+
+        return `🔵 **Status:** EM ESPERA\n⏳ **Próxima Varredura:** em aproximadamente ${minutosRestantes} minuto(s).`;
+    }

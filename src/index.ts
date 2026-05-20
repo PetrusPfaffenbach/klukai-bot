@@ -10,7 +10,7 @@ import { buscarPartidaCS2, iniciarSteam } from './services/steamClient';
 import { executeStatusCS } from "./commands/csStats";
 import { steamRegister } from "./commands/steamRegister";
 import { GenshinRegister } from "./commands/GenshinRegister";
-import { startTrackerCS2 } from "./services/csPoller";
+import { startTrackerCS2, forceScanCS2, pausePollerCS2, statusPollerCS2 } from "./services/csPoller";
 import { executeLeaderboard } from "./commands/Leaderboard";
 import { executarDiagnosticoDeBoot } from "./services/systemCheck";
 
@@ -19,7 +19,7 @@ import { executarDiagnosticoDeBoot } from "./services/systemCheck";
 setInterval(() => {
     const memory = process.memoryUsage();
     console.log(`[MONITOR RAM] Uso atual: ${(memory.rss / 1024 / 1024).toFixed(2)} MB`);
-}, 5000);
+}, 900000);
 
 const client = new Client({
     intents: [
@@ -40,9 +40,7 @@ client.once("ready", () => {
     console.log(`O motor da ${client.user?.tag} ligou com sucesso!`);
 
     executarDiagnosticoDeBoot(client);
-
     iniciarSteam();
-
     startTrackerCS2(client);
 });
 
@@ -62,41 +60,83 @@ client.on("messageCreate", async message => {
 
     // 2. COMANDOS DA SESSÃO STEAM
     if (FormattedMessage.startsWith("!registrar-steam") || FormattedMessage === "!perfil-steam") {
-        // Agora qualquer um dos dois comandos entra aqui e vai lá pro arquivo de comando se resolver!
         return steamRegister(message, discordIdUser);
     }
 
     // 3. COMANDOS DA SESSÃO HOYOVERSE (GENSHIN POR ENQUANTO!)
     if (FormattedMessage.startsWith("!registrar-genshin") || FormattedMessage === "!perfil-genshin") {
-        // Agora qualquer um dos dois comandos entra aqui e vai lá pro arquivo de comando se resolver!
         return GenshinRegister(message, discordIdUser);
     }
 
-// 4. COMANDO DE REGISTRO DO CS2
+    // 4. COMANDO DE REGISTRO DO CS2
     if(FormattedMessage.startsWith("!registrar-cs")) {
         const args = message.content.split(" ");
         
-        const authCode = args[1];
-        const knowMatch = args[2]; 
+        const authCode = args[1]?.trim();
+        let knowMatch = args[2]?.trim(); 
 
         if (!authCode || !knowMatch) {
             return message.reply("[!] **Formato incorreto!** Você precisa informar os dois códigos.\n👉 Uso correto: `!registrar-cs <AuthCode> <MatchToken>`");
         }
+        const extrairCSGO = knowMatch.match(/CSGO-[\w-]+/i);
 
+        if (extrairCSGO) {
+            knowMatch = extrairCSGO[0].toUpperCase(); 
+        } else {
+            return message.reply("[!] **Match Token inválido!** Certifique-se de que o código da partida contenha o padrão `CSGO-`.");
+        }
         return registerCS(message, authCode, knowMatch);
     }
 
-
     if (FormattedMessage === "!statuscs") {
-        // Agora o index só chama a função e passa a bola para o arquivo do comando!
         return executeStatusCS(message, discordIdUser);
     }  
 
     if(FormattedMessage.startsWith("!leaderboard")) {
         return executeLeaderboard(message)
     }
+    // 5 PAINEL DE CONTROLE DO ADMIN
+    const MEU_ID_ADMIN = "372473115533639690";
 
+    if (FormattedMessage === "!forçar-scan") {
+        if (discordIdUser !== MEU_ID_ADMIN) return;
+        const msg = await message.reply("⚙️ Forçando inicialização do motor da Valve...");
+        const resultado = await forceScanCS2(client);
+        msg.edit(`[OK] ${resultado}`);
+        return;
+    }
 
+    if (FormattedMessage === "!pausar-poller") {
+        if (discordIdUser !== MEU_ID_ADMIN) return;
+        const resultado = pausePollerCS2();
+        message.reply(`[OFF] ${resultado}`);
+        return;
+    }
+
+    if (FormattedMessage === "!status-poller") {
+        if (discordIdUser !== MEU_ID_ADMIN) return;
+        const resultado = statusPollerCS2();
+        message.reply(`[INFO] **Painel do Motor CS2**\n${resultado}`);
+        return;
+    }
+
+    if (FormattedMessage === "!limpar-banco") {
+        if (discordIdUser !== MEU_ID_ADMIN) return;
+        
+        const msg = await message.reply("🗑️ Iniciando protocolo de limpeza do banco de dados...");
+
+        const { error } = await supabase
+            .from("cs_matches")
+            .delete()
+            .not("discord_id", "is", null);
+
+        if (error) {
+            console.error("Erro ao limpar banco:", error);
+            return msg.edit("[ERROR] Falha crítica ao tentar limpar a tabela `cs_matches`.");
+        }
+
+        return msg.edit("[WIPE] **WIPE COMPLETO!** A tabela `cs_matches` foi totalmente zerada. O ambiente está limpo para novos testes.");
+    }
 });
 console.log("\n[DEBUG] Verificando Token do Discord:", process.env.DISCORD_TOKEN ? "✅ TOKEN PRESENTE NA MEMÓRIA" : "❌ TOKEN AUSENTE/UNDEFINED");
 console.log("[DEBUG] Iniciando tentativa de conexão com o Gateway do Discord...");
