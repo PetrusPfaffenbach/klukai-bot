@@ -82,7 +82,9 @@ iniciarSteam();
 
 
 // O login roda na raiz do projeto para dar a partida no bot
-client.login(process.env.DISCORD_TOKEN);
+client.login(process.env.DISCORD_TOKEN).catch(erro => {
+    console.error("[ERRO CRÍTICO] Falha ao conectar a Klukai no Discord:", erro);
+});
 
 // Remember
 // (1) git add . | (2) git commit -m "digite aqui" | (3) git push -u origin main 
