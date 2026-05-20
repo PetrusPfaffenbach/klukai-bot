@@ -55,10 +55,6 @@ export async function registerCS(message:any, authCode: string, knowMatch: strin
             return MessageWaiting.edit("[X] Credenciais válidas, mas não há rounds salvos nesta partida.");
         }
 
-        if (AllRounds.length === 0) {
-            return MessageWaiting.edit("[X] Credenciais válidas, mas não há dados na partida fornecida.");
-        }
-
         const lastMatch = AllRounds[AllRounds.length - 1];
         const account_ids = lastMatch?.reservation?.account_ids || [];
         const playerIndex = account_ids.findIndex((id: any) => id.toString() === accountConversor);

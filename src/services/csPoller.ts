@@ -71,6 +71,21 @@ export async function startPollerScanner(client: Client) {
                                 await sendTelemetry(client, `[SUCESSO] Nova partida registrada para <@${user.discord_id}>! (K:${kills} D:${deaths})`);
                             }
                             
+                            console.log("[OK] [POLLER] Varredura concluída.");
+            
+
+                            try {
+                                // Substitua pelo ID real do canal "Klukai-Diagnostic"
+                                const ID_CANAL_DIAGNOSTICO = "1506678403238072371"; 
+                                const canalDiag = client.channels.cache.get(ID_CANAL_DIAGNOSTICO) as any;
+                                
+                                if (canalDiag) {
+                                    await canalDiag.send(`⚙️ **[POLLER REPORT]** Varredura autônoma concluída. Banco de dados sincronizado. Próximo ciclo em 1 hora.`);
+                                }
+                            } catch (envioErro) {
+                                console.error("[POLLER] Falha ao enviar log para o canal de diagnóstico:", envioErro);
+                            }
+
                             await supabase
                                 .from("users")
                                 .update({ steam_know_match: shareCode })
@@ -100,10 +115,17 @@ export async function startPollerScanner(client: Client) {
     }
 
 
-    export async function startTrackerCS2(client: Client) {
-        console.log("[!TRACK!] [POLLER] Sistema engatilhado. Warm-up de 2 minutos iniciado. . .")       
+export async function startTrackerCS2(client: Client) {
+        console.log("[!TRACK!] [POLLER] Sistema engatilhado. Warm-up de 2 minutos iniciado. . .");
         
+        // 1. Avisamos ao painel que a primeira puxada vai ser daqui a 2 minutos
+        nextScanTime = Date.now() + 120000; 
+
         setTimeout(async () => {
+            // 2. IMPORTANTE: Rodamos a varredura IMEDIATAMENTE após os 2 minutos!
+            await startPollerScanner(client);
+
+            // 3. E só então ligamos o loop infinito de 1 Hora
             trackerInterval = setInterval(async() =>{
                 await startPollerScanner(client);
             }, SCAN_INTERVAL_MS);

@@ -44,10 +44,12 @@ export async function executarDiagnosticoDeBoot(client: Client) {
                 { name: "🗄️ NÚCLEO DE DADOS (Supabase)", value: `└ ${dbStatus}`, inline: false },
                 { name: "⚔️ HOYOVERSE LINK (Enka API)", value: `└ ${enkaStatus}`, inline: false },
                 { name: "🔫 VALVE NETWORK (Steam CS2)", value: `└ 🟢 AGUARDANDO GAME COORDINATOR`, inline: false },
-                { name: "⚙️ MOTOR V8 (Poller Automático)", value: `└ 🟢 LOOP ENGATILHADO (30 min)`, inline: false },
+                { name: "⚙️ RASTREADOR DO CS (Poller Automático)", value: `└ 🟢 LOOP ENGATILHADO (30 min)`, inline: false },
                 { name: "STATUS GERAL", value: "http://googleusercontent.com/immersive_entry_chip/0" }
-            )
-    }
+            );
+
+            await canalLog.send({ embeds: [embed] });
+    }       
         catch (fail) {
             console.log("ERROR!",fail);
         }

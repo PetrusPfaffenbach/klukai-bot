@@ -9,7 +9,7 @@ export async function executeStatusCS(message: Message, discordIdUser: string) {
             .from("cs_matches")
             .select("kills, deaths, assists, mvps")
             .eq("discord_id", discordIdUser)
-            .order("created-at", {ascending: false})
+            .order("created_at", {ascending: false})
             .limit(1)
             .maybeSingle();
 
