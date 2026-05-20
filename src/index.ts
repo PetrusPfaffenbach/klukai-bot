@@ -36,6 +36,8 @@ client.once("ready", () => {
 
     executarDiagnosticoDeBoot(client);
 
+    iniciarSteam();
+
     startTrackerCS2(client);
 });
 
@@ -102,7 +104,6 @@ client.login(process.env.DISCORD_TOKEN)
     console.error("\n[ERRO CRÍTICO] O Discord rejeitou o login. Motivo:", erro);
 });
 
-iniciarSteam();
 // Remember
 
 // (1) git add . | (2) git commit -m "digite aqui" | (3) git push -u origin main 

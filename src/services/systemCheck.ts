@@ -3,7 +3,7 @@ import { supabase } from "./supabase";
 
 export async function executarDiagnosticoDeBoot(client: Client) {
     // Substitua pelo ID do seu canal secreto "『🤖』configurações-de-bots"
-    const ID_DO_CANAL = "COLE_O_ID_DO_CANAL_AQUI"; 
+    const ID_DO_CANAL = "1042881333267005480"; 
     
     try {
         const canalLog = client.channels.cache.get(ID_DO_CANAL) as TextChannel;
