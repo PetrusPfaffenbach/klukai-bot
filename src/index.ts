@@ -7,7 +7,7 @@ import { registerCS } from "./services/csServices";
 import { supabase } from "./services/supabase";
 import express from 'express';
 import { buscarPartidaCS2, iniciarSteam } from './services/steamClient';
-import { executeStatusCS } from "../src/commands/csStats";
+import { executeStatusCS } from "./commands/csStats";
 import { steamRegister } from "./commands/steamRegister";
 import { GenshinRegister } from "./commands/GenshinRegister";
 import { startTrackerCS2 } from "./services/csPoller";
