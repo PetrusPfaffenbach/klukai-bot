@@ -16,6 +16,11 @@ import { executarDiagnosticoDeBoot } from "./services/systemCheck";
 
 
 
+setInterval(() => {
+    const memory = process.memoryUsage();
+    console.log(`[MONITOR RAM] Uso atual: ${(memory.rss / 1024 / 1024).toFixed(2)} MB`);
+}, 5000);
+
 const client = new Client({
     intents: [
         GatewayIntentBits.Guilds,
