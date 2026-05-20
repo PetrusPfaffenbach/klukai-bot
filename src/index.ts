@@ -81,7 +81,7 @@ client.on("messageCreate", async message => {
         const extrairCSGO = knowMatch.match(/CSGO-[\w-]+/i);
 
         if (extrairCSGO) {
-            knowMatch = extrairCSGO[0].toUpperCase(); 
+            knowMatch = extrairCSGO[0] 
         } else {
             return message.reply("[!] **Match Token inválido!** Certifique-se de que o código da partida contenha o padrão `CSGO-`.");
         }
