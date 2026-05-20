@@ -48,7 +48,7 @@ export async function executeLeaderboard(message: Message) {
         });
 
         const ranking = Object.keys(Score).map(id => {
-            const stats = Score[id];
+            const stats = Score[id]!;
             const deathsFixed = stats.deaths === 0 ? 1 : stats.deaths;
             const kda = ((stats.kills + stats.assists) / deathsFixed).toFixed(2);
             
