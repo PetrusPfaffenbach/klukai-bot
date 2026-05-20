@@ -47,6 +47,8 @@ export async function buscarPartidaCS2(steamId64: string, authCode: string, matc
     const apiKey = process.env.STEAM_API_KEY; 
     const url = `https://api.steampowered.com/ICSGOPlayers_730/GetNextMatchSharingCode/v1?key=${apiKey}&steamid=${steamId64}&steamidkey=${authCode}&knowncode=${matchToken}`;
     
+    console.log(`\n[RAIO-X VALVE] A URL gerada foi:\n${url}\n`);
+
     const resposta = await fetch(url);
     const dadosApi = await resposta.json();
     
