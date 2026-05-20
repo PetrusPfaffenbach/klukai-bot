@@ -78,13 +78,13 @@ export async function buscarPartidaCS2(steamId64: string, authCode: string, matc
                 clearTimeout(timeout); 
                 cs2.removeListener('matchList', listener); 
                 
-                // MUDANÇA AQUI: Agora devolvemos um objeto com o código e os dados!
+                // Garantimos que estamos resolvendo o objeto de partida correto
                 resolve({
-                    shareCode: shareCode, // O código que a API gerou
-                    dadosMatch: matches[0] // O placar bruto do GC
+                    shareCode: shareCode,
+                    dadosMatch: matches[0] || data?.matches?.[0]
                 }); 
             }
-        };
+        }
 
         cs2.on('matchList', listener);
     });

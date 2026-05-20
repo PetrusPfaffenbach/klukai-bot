@@ -135,15 +135,18 @@ export async function startPollerScanner(client: Client) {
     }
 
     export function statusPollerCS2() {
-        if(!trackerInterval && !nextScanTime) {
-            return "[OFF] **Status: ** PAUSADO";
-        }
-        if(isRunning) {
+        if (isRunning) {
             return "[ON] **Status:** EM CICLO";
         }
-
-        const msRestantes = nextScanTime ?nextScanTime - Date.now() : 0;
-        const minutosRestantes = Math.floor(msRestantes / 60000);
-
-        return `🔵 **Status:** EM ESPERA\n⏳ **Próxima Varredura:** em aproximadamente ${minutosRestantes} minuto(s).`;
+        
+        // Se não tem intervalo rodando e não tem tempo definido, é o Warm-up!
+        if (!trackerInterval && !nextScanTime) {
+            return "[TIME] **Status:** AQUECENDO (Warm-up inicial de 2 min em andamento)";
+        }
+        
+        // Calcula os minutos restantes com segurança para não dar número negativo
+        const msRestantes = nextScanTime ? nextScanTime - Date.now() : 0;
+        const minutosRestantes = Math.max(0, Math.floor(msRestantes / 60000));
+        
+        return `[STATUS] **Status:** EM ESPERA\n⏳ **Próxima Varredura:** em aproximadamente ${minutosRestantes} minuto(s).`;
     }

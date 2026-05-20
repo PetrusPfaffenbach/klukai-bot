@@ -36,14 +36,24 @@ export async function registerCS(message:any, authCode: string, knowMatch: strin
 
         await MessageWaiting.edit(`<@${discordId}>, Validando credenciais com a Valve e imporatando primeira partida. . .`)
 
-        const { shareCode: newShareCode, Matchdata: match } = await buscarPartidaCS2(
+        const { shareCode: newShareCode, dadosMatch: match } = await buscarPartidaCS2(
             founduser.steam_id_64,
             authCode,
             knowMatch
         );
 
+        
+        if (!match) {
+            return MessageWaiting.edit("[X] A Valve respondeu, mas o pacote do placar veio vazio. Aguarde 1 minuto e tente novamente.");
+        }
+
         const accountConversor = (BigInt(founduser.steam_id_64) - 76561197960265728n).toString();
-        const AllRounds = match.roundstatsall || [];
+        
+        const AllRounds = match?.roundstatsall || match?.matchinfo?.roundstatsall || [];
+
+        if (AllRounds.length === 0) {
+            return MessageWaiting.edit("[X] Credenciais válidas, mas não há rounds salvos nesta partida.");
+        }
 
         if (AllRounds.length === 0) {
             return MessageWaiting.edit("[X] Credenciais válidas, mas não há dados na partida fornecida.");
