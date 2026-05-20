@@ -101,6 +101,14 @@ client.on("messageCreate", async message => {
 console.log("\n[DEBUG] Verificando Token do Discord:", process.env.DISCORD_TOKEN ? "✅ TOKEN PRESENTE NA MEMÓRIA" : "❌ TOKEN AUSENTE/UNDEFINED");
 console.log("[DEBUG] Iniciando tentativa de conexão com o Gateway do Discord...");
 
+client.on("debug", (info) => {
+    console.log(`[DISCORD DEBUG] ${info}`);
+});
+
+console.log("\n[DEBUG] Verificando Token do Discord:", process.env.DISCORD_TOKEN ? "✅ TOKEN PRESENTE NA MEMÓRIA" : "❌ TOKEN AUSENTE/UNDEFINED");
+console.log("[DEBUG] Iniciando tentativa de conexão com o Gateway do Discord...");
+
+
 client.login(process.env.DISCORD_TOKEN)
 .then(() => {
     console.log("[DEBUG] A promessa de login foi concluída com sucesso!");
@@ -108,6 +116,8 @@ client.login(process.env.DISCORD_TOKEN)
 .catch(erro => {
     console.error("\n[ERRO CRÍTICO] O Discord rejeitou o login. Motivo:", erro);
 });
+
+
 
 // Remember
 
