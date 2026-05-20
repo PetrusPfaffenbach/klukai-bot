@@ -65,6 +65,20 @@ client.on("messageCreate", async message => {
         return GenshinRegister(message, discordIdUser);
     }
 
+// 4. COMANDO DE REGISTRO DO CS2
+    if(FormattedMessage.startsWith("!registrar-cs")) {
+        const args = message.content.split(" ");
+        
+        const authCode = args[1];
+        const knowMatch = args[2]; 
+
+        if (!authCode || !knowMatch) {
+            return message.reply("[!] **Formato incorreto!** Você precisa informar os dois códigos.\n👉 Uso correto: `!registrar-cs <AuthCode> <MatchToken>`");
+        }
+
+        return registerCS(message, authCode, knowMatch);
+    }
+
 
     if (FormattedMessage === "!statuscs") {
         // Agora o index só chama a função e passa a bola para o arquivo do comando!
@@ -80,11 +94,15 @@ client.on("messageCreate", async message => {
 
 iniciarSteam();
 
+    console.log("\n[DEBUG] Verificando Token do Discord:", process.env.DISCORD_TOKEN ? "✅ TOKEN PRESENTE NA MEMÓRIA" : "❌ TOKEN AUSENTE/UNDEFINED");
+    console.log("[DEBUG] Iniciando tentativa de conexão com o Gateway do Discord...");
 
-// O login roda na raiz do projeto para dar a partida no bot
-client.login(process.env.DISCORD_TOKEN).catch(erro => {
-    console.error("[ERRO CRÍTICO] Falha ao conectar a Klukai no Discord:", erro);
-});
-
+client.login(process.env.DISCORD_TOKEN)
+    .then(() => {
+        console.log("[DEBUG] A promessa de login foi concluída com sucesso!");
+    })
+    .catch(erro => {
+        console.error("\n[ERRO CRÍTICO] O Discord rejeitou o login. Motivo:", erro);
+    });
 // Remember
 // (1) git add . | (2) git commit -m "digite aqui" | (3) git push -u origin main 
