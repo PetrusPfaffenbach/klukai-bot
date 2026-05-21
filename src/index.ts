@@ -1,7 +1,7 @@
 import "dotenv/config";
 import { Client, GatewayIntentBits, ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, ModalBuilder, TextInputBuilder, TextInputStyle, formatEmoji } from "discord.js";
 import { SteamProfile } from "./services/steamServices";
-import { perfilGenshin, exibirDetalhesPersonagem, showcaseGenshin } from "./services/enkaServices";
+import { perfilGenshin} from "./services/enkaServices";
 import http from "http";
 import { registerCS } from "./services/csServices";
 import { supabase } from "./services/supabase";
@@ -91,23 +91,6 @@ client.on("messageCreate", async message => {
     // 3. COMANDOS DA SESSÃO HOYOVERSE (GENSHIN POR ENQUANTO!)
     if (FormattedMessage.startsWith("!registrar-genshin") || FormattedMessage === "!perfil-genshin") {
         return GenshinRegister(message, discordIdUser);
-    }
-
-    if (FormattedMessage === "!status-vitrine") {
-        return showcaseGenshin(message, discordIdUser);
-    }
-
-    if (FormattedMessage.startsWith("!") && !FormattedMessage.includes(" ")) {
-        const nomeComando = FormattedMessage.slice(1).trim(); // Remove a "!" (ex: "!raiden" vira "raiden")
-        
-        // Perguntamos ao genshin-db se essa palavra é um personagem válido no jogo
-        const genshinDb = require("genshin-db");
-        const heroiValido = genshinDb.characters(nomeComando);
-
-        if (heroiValido) {
-            // Se o personagem existir no jogo, disparamos a análise detalhada dele!
-            return exibirDetalhesPersonagem(message, discordIdUser, nomeComando);
-        }
     }
 
     // 4. COMANDO DE REGISTRO DO CS2
