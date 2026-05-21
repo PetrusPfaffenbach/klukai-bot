@@ -126,10 +126,3 @@ export async function buscarPartidaCS2(steamId64: string, authCode: string, matc
         cs2.on('matchList', listener);
     });
 }
-
-export function simularQuedaDaValve() {
-    console.log("\n[CHAOS MONKEY] Iniciando simulação de queda de rede (Cabo puxado)...");
-    
-    // O logOff() encerra a sessão ativa na força bruta e engatilha o evento 'disconnected'
-    steamClient.logOff(); 
-}

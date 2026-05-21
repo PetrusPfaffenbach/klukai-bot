@@ -6,7 +6,7 @@ import http from "http";
 import { registerCS } from "./services/csServices";
 import { supabase } from "./services/supabase";
 import express from 'express';
-import { buscarPartidaCS2, iniciarSteam, simularQuedaDaValve } from './services/steamClient';
+import { buscarPartidaCS2, iniciarSteam} from './services/steamClient';
 import { executeStatusCS } from "./commands/csStats";
 import { steamRegister } from "./commands/steamRegister";
 import { GenshinRegister } from "./commands/GenshinRegister";
@@ -130,14 +130,6 @@ client.on("messageCreate", async message => {
         msg.edit(`[OK] ${resultado}`);
         return;
     }
-
-    if (FormattedMessage === "!teste-queda") {
-        if (discordIdUser !== MEU_ID_ADMIN) return;
-        message.reply("🌪️ Simulação de queda de servidor iniciada. Acompanhe os logs no terminal!");
-        simularQuedaDaValve();
-        return;
-    }
-
     if (FormattedMessage === "!pausar-poller") {
         if (discordIdUser !== MEU_ID_ADMIN) return;
         const resultado = pausePollerCS2();

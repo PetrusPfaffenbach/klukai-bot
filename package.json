@@ -28,7 +28,6 @@
     "dotenv": "^17.4.2",
     "enka-network-api": "^5.0.15",
     "express": "^5.2.1",
-    "genshin-db": "^5.2.11",
     "genshin.js": "^1.0.0-alpha.1",
     "got-scraping": "^4.2.1",
     "node-cs2": "^2.2.4",
