@@ -1,12 +1,12 @@
 import "dotenv/config";
 import { Client, GatewayIntentBits, ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, ModalBuilder, TextInputBuilder, TextInputStyle, formatEmoji } from "discord.js";
 import { SteamProfile } from "./services/steamServices";
-import { perfilGenshin } from "./services/enkaServices";
+import { perfilGenshin, exibirDetalhesPersonagem, showcaseGenshin } from "./services/enkaServices";
 import http from "http";
 import { registerCS } from "./services/csServices";
 import { supabase } from "./services/supabase";
 import express from 'express';
-import { buscarPartidaCS2, iniciarSteam } from './services/steamClient';
+import { buscarPartidaCS2, iniciarSteam, simularQuedaDaValve } from './services/steamClient';
 import { executeStatusCS } from "./commands/csStats";
 import { steamRegister } from "./commands/steamRegister";
 import { GenshinRegister } from "./commands/GenshinRegister";
@@ -58,6 +58,31 @@ client.on("messageCreate", async message => {
         return message.reply("sou a klukai RANDANDANDAN!");
     }
 
+    // 1.5 CENTRAL DE COMANDOS
+    if (FormattedMessage === "!comandos" || FormattedMessage === "!ajuda" || FormattedMessage === "!help") {
+        const embedHelp = new EmbedBuilder()
+            .setTitle("🤖 Terminal de Comandos: Klukai O.S.")
+            .setColor("#2B2D31") // Cor que se camufla com o fundo do Discord
+            .setDescription("Abaixo está a lista completa de módulos operacionais disponíveis no sistema:")
+            .addFields(
+                { 
+                    name: "🔫 Counter-Strike 2", 
+                    value: "`!registrar-cs <AuthCode> <ShareCode>`\nVincula sua conta e importa sua primeira partida.\n\n`!cs-help`\nMostra o tutorial de como conseguir os códigos.\n\n`!statuscs`\nMostra o seu card de perfil com o K/D/A atualizado.\n\n`!leaderboard`\nMostra o ranking histórico oficial do servidor.\n\n`!leaderboard dia`\nMostra o ranking apenas das partidas jogadas hoje." 
+                },
+                { 
+                    name: "⚙️ Módulo Steam Base", 
+                    value: "`!registrar-steam <SteamID64>`\nRegistra a sua conta da Steam no banco de dados.\n\n`!perfil-steam`\nExibe um card detalhado do seu status na Steam." 
+                },
+                { 
+                    name: "🌌 Genshin Impact", 
+                    value: "`!registrar-genshin <UID>`\n*(Módulo em fase de construção)*\n\n`!perfil-genshin`\n*(Módulo em fase de construção)*" 
+                }
+            )
+            .setFooter({ text: "Sistemas Operacionais Klukai • Execute os comandos no chat" });
+
+        return message.reply({ embeds: [embedHelp] });
+    }
+
     // 2. COMANDOS DA SESSÃO STEAM
     if (FormattedMessage.startsWith("!registrar-steam") || FormattedMessage === "!perfil-steam") {
         return steamRegister(message, discordIdUser);
@@ -66,6 +91,23 @@ client.on("messageCreate", async message => {
     // 3. COMANDOS DA SESSÃO HOYOVERSE (GENSHIN POR ENQUANTO!)
     if (FormattedMessage.startsWith("!registrar-genshin") || FormattedMessage === "!perfil-genshin") {
         return GenshinRegister(message, discordIdUser);
+    }
+
+    if (FormattedMessage === "!status-vitrine") {
+        return showcaseGenshin(message, discordIdUser);
+    }
+
+    if (FormattedMessage.startsWith("!") && !FormattedMessage.includes(" ")) {
+        const nomeComando = FormattedMessage.slice(1).trim(); // Remove a "!" (ex: "!raiden" vira "raiden")
+        
+        // Perguntamos ao genshin-db se essa palavra é um personagem válido no jogo
+        const genshinDb = require("genshin-db");
+        const heroiValido = genshinDb.characters(nomeComando);
+
+        if (heroiValido) {
+            // Se o personagem existir no jogo, disparamos a análise detalhada dele!
+            return exibirDetalhesPersonagem(message, discordIdUser, nomeComando);
+        }
     }
 
     // 4. COMANDO DE REGISTRO DO CS2
@@ -103,6 +145,13 @@ client.on("messageCreate", async message => {
         const msg = await message.reply("⚙️ Forçando inicialização do motor da Valve...");
         const resultado = await forceScanCS2(client);
         msg.edit(`[OK] ${resultado}`);
+        return;
+    }
+
+    if (FormattedMessage === "!teste-queda") {
+        if (discordIdUser !== MEU_ID_ADMIN) return;
+        message.reply("🌪️ Simulação de queda de servidor iniciada. Acompanhe os logs no terminal!");
+        simularQuedaDaValve();
         return;
     }
 

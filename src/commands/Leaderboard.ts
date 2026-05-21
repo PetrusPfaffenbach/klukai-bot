@@ -4,7 +4,7 @@ import { supabase } from "../services/supabase";
 export async function executeLeaderboard(message: Message) {
     const FormattedMessage = message.content.toLowerCase();
     
-    // Descobre se o usuário quer o ranking de hoje ou o histórico inteiro
+    
     const isDaily = FormattedMessage.includes("dia");
 
     try {
@@ -47,7 +47,7 @@ export async function executeLeaderboard(message: Message) {
             Score[id].mvps += matchItem.mvps || 0;
         });
 
-        const ranking = Object.keys(Score).map(id => {
+        let ranking = Object.keys(Score).map(id => {
             const stats = Score[id]!;
             const deathsFixed = stats.deaths === 0 ? 1 : stats.deaths;
             const kda = ((stats.kills + stats.assists) / deathsFixed).toFixed(2);
@@ -59,26 +59,41 @@ export async function executeLeaderboard(message: Message) {
             };
         });
 
+        if(!isDaily) {
+            ranking = ranking.filter(player => player.kills >= 25)
+        }
 
         ranking.sort((a, b) => b.kda - a.kda);
 
         const embed = new EmbedBuilder()
-            .setTitle(isDaily ? '🏆 Leaderboard CS2: Gameplay de hoje' : '🏆 Leaderboard CS2: Histórico de gameplay')
-            .setColor('#FFD700')
-            .setDescription('Ranking consolidado no KDA (Kills + Assists / Deaths) extraído diretamente da Valve.')
-            .setThumbnail('https://i.imgur.com/83pA8oW.png');
+            .setTitle(isDaily ? '🏆 Leaderboard CS2: Operações de Hoje' : '🏆 Leaderboard CS2: Hall da Fama Oficial')
+            .setColor(isDaily ? '#00FFFF' : '#FFD700') // Ciano pro Diário, Ouro pro Histórico
+            .setDescription(isDaily 
+                ? 'Ranking diário consolidado no KDA. Reinicia todo dia à meia-noite.' 
+                : 'Ranking global consolidado. *Requisito mínimo: 25 Kills totais para ranquear.*'
+            );
 
-        let topString = "";
+        if (ranking.length === 0) {
+            embed.addFields({ name: 'Tabela Vazia', value: 'Nenhum jogador atingiu a cota mínima de 25 kills ainda.' });
+        } else {
+            ranking.slice(0, 10).forEach((player, index) => {
+                const medal = index === 0 ? "🥇" : index === 1 ? "🥈" : index === 2 ? "🥉" : "🏅";
+                
+                // Formatação monospaçada para deixar os números alinhados
+                const K = player.kills.toString().padStart(3, '0');
+                const D = player.deaths.toString().padStart(3, '0');
+                const A = player.assists.toString().padStart(3, '0');
 
-        ranking.slice(0, 10).forEach((player, index) => {
-            const medal = index === 0 ? "🥇" : index === 1 ? "🥈" : index === 2 ? "🥉" : "🏅";
-            topString += `${medal} <@${player.discord_id}> - KDA: **${player.kda.toFixed(2)}**\n`;
-            topString += `└ ⚔️ \`${player.kills} / ${player.deaths} / ${player.assists}\` | ⭐ \`${player.mvps}\` MVPs\n\n`;
-        });
+                embed.addFields({
+                    name: `${medal} ${index + 1}º Lugar`,
+                    value: `👤 <@${player.discord_id}> • **KDA: ${player.kda.toFixed(2)}**\n\`[ ⚔️ K: ${K} | 💀 D: ${D} | 🤝 A: ${A} ]\` • ⭐ \`${player.mvps}\` MVPs`,
+                    inline: false // Deixa cada jogador em uma linha separada para destacar
+                });
+            });
+        }
 
-        embed.addFields({ name: 'Classificação "Oficial"', value: topString });
-        embed.setFooter({ text: 'CS2Bot • Atualizado dinamicamente', iconURL: message.client.user?.displayAvatarURL() })
-            .setTimestamp();
+        embed.setFooter({ text: 'Klukai Analytics • Matchmaking System', iconURL: message.client.user?.displayAvatarURL() })
+             .setTimestamp();
 
         return WaitMessage.edit({ content: "", embeds: [embed] });
 
