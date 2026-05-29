@@ -2,7 +2,7 @@ import { Client, TextChannel } from "discord.js";
 
 export async function sendTelemetry(client: Client, errorMessage: string) {
     try {
-        const channelID = "1506678403238072371"; // Seu canal de bots
+        const channelID = process.env.DIAG_ID as string; // Seu canal de bots
         
         const LogChannel = (client.channels.cache.get(channelID) ||
                             client.channels.cache.find((c: any) => c.name === '『🤖』klukai-diagnostics')) as TextChannel;

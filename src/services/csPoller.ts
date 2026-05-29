@@ -76,7 +76,7 @@ export async function startPollerScanner(client: Client) {
 
                             try {
                                 // Substitua pelo ID real do canal "Klukai-Diagnostic"
-                                const ID_CANAL_DIAGNOSTICO = "1506678403238072371"; 
+                                const ID_CANAL_DIAGNOSTICO = process.env.DIAG_ID as string; 
                                 const canalDiag = client.channels.cache.get(ID_CANAL_DIAGNOSTICO) as any;
                                 
                                 if (canalDiag) {

@@ -121,30 +121,30 @@ client.on("messageCreate", async message => {
         return executeLeaderboard(message)
     }
     // 5 PAINEL DE CONTROLE DO ADMIN
-    const MEU_ID_ADMIN = "372473115533639690";
+    const MEU_ID_ADMIN = process.env.DISCORD_TOKEN;
 
-    if (FormattedMessage === "!forçar-scan") {
+    if (FormattedMessage === "!forçar-scanner") {
         if (discordIdUser !== MEU_ID_ADMIN) return;
         const msg = await message.reply("⚙️ Forçando inicialização do motor da Valve...");
         const resultado = await forceScanCS2(client);
         msg.edit(`[OK] ${resultado}`);
         return;
     }
-    if (FormattedMessage === "!pausar-poller") {
+    if (FormattedMessage === "!pausar-pollers") {
         if (discordIdUser !== MEU_ID_ADMIN) return;
         const resultado = pausePollerCS2();
         message.reply(`[OFF] ${resultado}`);
         return;
     }
 
-    if (FormattedMessage === "!status-poller") {
+    if (FormattedMessage === "!status-pollers") {
         if (discordIdUser !== MEU_ID_ADMIN) return;
         const resultado = statusPollerCS2();
         message.reply(`[INFO] **Painel do Motor CS2**\n${resultado}`);
         return;
     }
 
-    if (FormattedMessage === "!limpar-banco") {
+    if (FormattedMessage === "!limpar-bancos") {
         if (discordIdUser !== MEU_ID_ADMIN) return;
         
         const msg = await message.reply("🗑️ Iniciando protocolo de limpeza do banco de dados...");

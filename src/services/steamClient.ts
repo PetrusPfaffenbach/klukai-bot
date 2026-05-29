@@ -22,6 +22,21 @@ cs2.on('ready', () => {
     console.log('[CS2] Game Coordinator pronto e online!');
 });
 
+// ADICIONE ESTE BLOCO AQUI 👇
+// Quando apenas o Game Coordinator do CS2 cai (mas a Steam continua online)
+cs2.on('unready', () => {
+    console.log('[CS2 WARN] A conexão com o Game Coordinator caiu! Entrando em Estado Zombie...');
+    console.log('[CS2 WARN] Reiniciando o jogo em 15 segundos para forçar nova sessão...');
+    
+    // "Fecha" o jogo
+    steamClient.gamesPlayed([]); 
+    
+    setTimeout(() => {
+        // "Abre" o jogo novamente após 15 segundos para forçar o GC a responder
+        steamClient.gamesPlayed([730]); 
+    }, 15000);
+});
+
 steamClient.on('disconnected', (eresult: any, msg: string) => {
     console.log(`[STEAM ERROR] Desconectado da Valve! Motivo: ${msg} (Código: ${eresult})`)
 
@@ -83,11 +98,26 @@ export async function buscarPartidaCS2(steamId64: string, authCode: string, matc
 
     const apiKey = process.env.STEAM_API_KEY; 
     const url = `https://api.steampowered.com/ICSGOPlayers_730/GetNextMatchSharingCode/v1?key=${apiKey}&steamid=${steamId64}&steamidkey=${authCode}&knowncode=${matchToken}`;
-    
-    console.log(`\n[RAIO-X VALVE] A URL gerada foi:\n${url}\n`);
-
     const resposta = await fetch(url);
-    const dadosApi = await resposta.json();
+    const urlSeguraParaLog = url.replace(apiKey as string, "CHAVE_OCULTADA_POR_SEGURANCA");
+
+    console.log(`\n[RAIO-X VALVE] A URL gerada foi:\n${urlSeguraParaLog}\n`);
+    
+    // NOVO BLOCO DE VERIFICAÇÃO DE ERRO
+    if (!resposta.ok) {
+        // Se a Valve devolver um HTML (erro 403, 400, 500, etc), nós lemos esse texto!
+        const htmlDeErro = await resposta.text();
+        throw new Error(`Erro HTTP ${resposta.status} na API da Steam. Resposta: ${htmlDeErro.substring(0, 100)}...`);
+    }
+
+    let dadosApi;
+    try {
+        dadosApi = await resposta.json();
+    } catch (e) {
+        throw new Error("A API da Steam devolveu HTML em vez de JSON num código HTTP 200 (Muito raro).");
+    }
+
+
     
     const shareCode = dadosApi?.result?.nextcode;
     
