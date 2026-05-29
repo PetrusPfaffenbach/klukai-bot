@@ -15,6 +15,25 @@ import { executeLeaderboard } from "./commands/Leaderboard";
 import { executarDiagnosticoDeBoot } from "./services/systemCheck";
 
 
+const requiredEnvVars = [
+    "DISCORD_TOKEN",
+    "STEAM_API_KEY",
+    "SUPABASE_URL",
+    "SUPABASE_KEY",
+    "STEAM_BOT_USER",
+    "STEAM_BOT_PASS",
+    "ID_CANAL",
+    "DIAG_ID",
+    "MEU_ID_ADMIN"
+];
+
+for (const envVar of requiredEnvVars) {
+    if (!process.env[envVar]) {
+        console.error(`[FATAL ERROR] Variável de ambiente ausente: ${envVar}`);
+        process.exit(1); // Desliga o motor imediatamente!
+    }
+}
+
 
 setInterval(() => {
     const memory = process.memoryUsage();
@@ -123,28 +142,28 @@ client.on("messageCreate", async message => {
     // 5 PAINEL DE CONTROLE DO ADMIN
     const MEU_ID_ADMIN = process.env.DISCORD_TOKEN;
 
-    if (FormattedMessage === "!forçar-scanner") {
+    if (FormattedMessage === "!forçar-scan") {
         if (discordIdUser !== MEU_ID_ADMIN) return;
         const msg = await message.reply("⚙️ Forçando inicialização do motor da Valve...");
         const resultado = await forceScanCS2(client);
         msg.edit(`[OK] ${resultado}`);
         return;
     }
-    if (FormattedMessage === "!pausar-pollers") {
+    if (FormattedMessage === "!pausar-poller") {
         if (discordIdUser !== MEU_ID_ADMIN) return;
         const resultado = pausePollerCS2();
         message.reply(`[OFF] ${resultado}`);
         return;
     }
 
-    if (FormattedMessage === "!status-pollers") {
+    if (FormattedMessage === "!status-poller") {
         if (discordIdUser !== MEU_ID_ADMIN) return;
         const resultado = statusPollerCS2();
         message.reply(`[INFO] **Painel do Motor CS2**\n${resultado}`);
         return;
     }
 
-    if (FormattedMessage === "!limpar-bancos") {
+    if (FormattedMessage === "!limpar-banco") {
         if (discordIdUser !== MEU_ID_ADMIN) return;
         
         const msg = await message.reply("🗑️ Iniciando protocolo de limpeza do banco de dados...");
@@ -181,7 +200,13 @@ client.login(process.env.DISCORD_TOKEN)
     console.error("\n[ERRO CRÍTICO] O Discord rejeitou o login. Motivo:", erro);
 });
 
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('[ANTI-CRASH] Rejeição de Promise não tratada:', reason);
+});
 
+process.on('uncaughtException', (error) => {
+    console.error('[ANTI-CRASH] Exceção fatal capturada:', error);
+});
 
 // Remember
 
