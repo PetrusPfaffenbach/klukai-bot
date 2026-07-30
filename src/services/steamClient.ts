@@ -8,9 +8,7 @@ const cs2 = new CS2(steamClient);
 let cooldownActual = 30000;
 const cooldownLimit = 120000;
 
-// ==========================================
-// MODO RASTREADOR: Vai printar tudo o que a Valve responder no terminal
-// ==========================================
+
 cs2.on('debug', (msg: string) => {
     console.log(`[CS2 GC DEBUG] ${msg}`);
 });
@@ -18,21 +16,21 @@ cs2.on('debug', (msg: string) => {
 steamClient.on('error', (err: any) => {
     console.error(`[STEAM ERROR]`, err);
 });
-cs2.on('ready', () => {
+
+cs2.on('connectedToGC', () => {
     console.log('[CS2] Game Coordinator pronto e online!');
 });
 
-// ADICIONE ESTE BLOCO AQUI 👇
-// Quando apenas o Game Coordinator do CS2 cai (mas a Steam continua online)
-cs2.on('unready', () => {
-    console.log('[CS2 WARN] A conexão com o Game Coordinator caiu! Entrando em Estado Zombie...');
+
+cs2.on('disconnectedFromGC', (reason: any) => {
+    console.log(`[CS2 WARN] A conexão com o Game Coordinator caiu! (motivo: ${reason}) Entrando em Estado Zombie...`);
     console.log('[CS2 WARN] Reiniciando o jogo em 15 segundos para forçar nova sessão...');
     
-    // "Fecha" o jogo
+    
     steamClient.gamesPlayed([]); 
     
     setTimeout(() => {
-        // "Abre" o jogo novamente após 15 segundos para forçar o GC a responder
+
         steamClient.gamesPlayed([730]); 
     }, 15000);
 });
@@ -82,7 +80,7 @@ steamClient.on('disconnected', (eresult: any, msg: string) => {
         steamClient.on('loggedOn', () => {
                 console.log('[STEAM] Bot conectado à rede da Valve com sucesso!');
                 
-                // Fica online e abre o CS2 direto, sem firulas
+                
                 steamClient.setPersona(1); // 1 significa Online
                 steamClient.gamesPlayed([730]); 
             });
@@ -91,7 +89,11 @@ steamClient.on('disconnected', (eresult: any, msg: string) => {
 
 export async function buscarPartidaCS2(steamId64: string, authCode: string, matchToken: string): Promise<any> {
     
-    // Trava de Segurança: Verifica se o GC está online antes de gastar processamento
+
+    if (!cs2.haveGCSession) {
+        await new Promise((resolve) => setTimeout(resolve, 10000));
+    }
+
     if (!cs2.haveGCSession) {
         throw new Error("Game Coordinator não está pronto. O bot acabou de ligar ou a Steam caiu. Tente em 10 segundos.");
     }
@@ -103,9 +105,9 @@ export async function buscarPartidaCS2(steamId64: string, authCode: string, matc
 
     console.log(`\n[RAIO-X VALVE] A URL gerada foi:\n${urlSeguraParaLog}\n`);
     
-    // NOVO BLOCO DE VERIFICAÇÃO DE ERRO
+    
     if (!resposta.ok) {
-        // Se a Valve devolver um HTML (erro 403, 400, 500, etc), nós lemos esse texto!
+       
         const htmlDeErro = await resposta.text();
         throw new Error(`Erro HTTP ${resposta.status} na API da Steam. Resposta: ${htmlDeErro.substring(0, 100)}...`);
     }
@@ -132,7 +134,7 @@ export async function buscarPartidaCS2(steamId64: string, authCode: string, matc
         
         cs2.requestGame(shareCode);
 
-        // Aumentamos o tempo de tolerância para 30 segundos
+        
         const timeout = setTimeout(() => {
             cs2.removeListener('matchList', listener); 
             reject(new Error("Timeout: O GC da Valve demorou muito para responder (30s)."));
@@ -145,7 +147,7 @@ export async function buscarPartidaCS2(steamId64: string, authCode: string, matc
                 clearTimeout(timeout); 
                 cs2.removeListener('matchList', listener); 
                 
-                // Garantimos que estamos resolvendo o objeto de partida correto
+                
                 resolve({
                     shareCode: shareCode,
                     dadosMatch: matches[0] || data?.matches?.[0]
