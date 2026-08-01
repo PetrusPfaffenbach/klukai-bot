@@ -4,7 +4,13 @@ import { Client } from "discord.js";
 import { sendTelemetry } from "./Telemetry"; 
 import { start } from "node:repl";
 
+
+// Função de tempo e jitter!
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+const getRandomJitter = (minMs: number, maxMs: number) => {
+    return Math.floor(Math.random()* (maxMs - minMs + 1)) + minMs;
+}
 
 let trackerInterval: NodeJS.Timeout | null = null;
 let isRunning: boolean = false;
@@ -97,25 +103,37 @@ export async function startPollerScanner(client: Client) {
                         console.log(`[NOR] [POLLER] Nenhuma partida nova para ${user.discord_id}.`);
                     } else {
                         console.error(`[FAILED] [POLLER] Falha ao rastrear ${user.discord_id}:`, err.message);
-                        // Avisando do erro tático!
                         await sendTelemetry(client, `[SCAN FAILURE] Falha ao rastrear <@${user.discord_id}>: ${err.message}`);
                     }
                 }
                 
-                await delay(5000);
+                const userDelay = getRandomJitter(8000, 20000);
+                console.log(`[POLLER] Aguardando $({userDelay/1000).toFixed(1)}s`)
+                await delay(userDelay);
             }
-            
             console.log("[OK] [POLLER] Varredura concluída.");
         } catch (erroGeral: any) {
             await sendTelemetry(client, `[ERRO CRÍTICO NO LOOP]: ${erroGeral.message}`);
         } finally {
             isRunning = false;
-            nextScanTime = Date.now() + SCAN_INTERVAL_MS;
+            agendarProximaVarredura(client);
         }
+    }
+    
+    function agendarProximaVarredura(client: Client) {
+        if(trackerInterval) clearTimeout(trackerInterval);
+
+        const nextCicleMs = getRandomJitter(2700000, 4500000);
+        nextScanTime = Date.now() + nextCicleMs;
+        console.log(`[POLLER] Próxima varredura programada para daqui a ${(nextCicleMs / 60000).toFixed(1)} minutos.`);
+
+        trackerInterval = setTimeout(async () => {
+            await startPollerScanner(client);
+        }, nextCicleMs);
     }
 
 
-export async function startTrackerCS2(client: Client) {
+    export async function startTrackerCS2(client: Client) {
         console.log("[!TRACK!] [POLLER] Sistema engatilhado. Warm-up de 2 minutos iniciado. . .");
         
         // 1. Avisamos ao painel que a primeira puxada vai ser daqui a 2 minutos

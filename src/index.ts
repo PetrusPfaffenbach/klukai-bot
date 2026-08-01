@@ -140,8 +140,8 @@ client.on("messageCreate", async message => {
         return executeLeaderboard(message)
     }
     // 5 PAINEL DE CONTROLE DO ADMIN
-    const MEU_ID_ADMIN = process.env.DISCORD_TOKEN;
-
+    const MEU_ID_ADMIN = process.env.MEU_ID_ADMIN;
+    
     if (FormattedMessage === "!forçar-scan") {
         if (discordIdUser !== MEU_ID_ADMIN) return;
         const msg = await message.reply("⚙️ Forçando inicialização do motor da Valve...");
